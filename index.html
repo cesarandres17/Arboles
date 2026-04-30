@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Árbol Binario de Búsqueda</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #1a1d27;
+    --border: #2a2d3e;
+    --accent: #6366f1;
+    --accent2: #22d3ee;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --node-default: #6366f1;
+    --node-highlight: #f59e0b;
+    --node-leaf: #10b981;
+    --node-found: #22d3ee;
+    --node-delete: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+  header { background: var(--panel); border-bottom: 1px solid var(--border); padding: 10px 20px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+  header h1 { font-size: 16px; font-weight: 600; color: var(--accent); }
+  .status-bar { margin-left: auto; display: flex; gap: 12px; font-size: 12px; color: var(--muted); }
+  .stat { display: flex; gap: 4px; align-items: center; }
+  .stat span { color: var(--text); font-weight: 600; }
+
+  .main { display: flex; flex: 1; overflow: hidden; }
+
+  .sidebar { width: 280px; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
+
+  .section { padding: 12px; border-bottom: 1px solid var(--border); }
+  .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+
+  .input-row { display: flex; gap: 6px; margin-bottom: 6px; }
+  input[type=number], input[type=text], select {
+    background: #0f1117; border: 1px solid var(--border); color: var(--text);
+    padding: 6px 10px; border-radius: 6px; font-size: 13px; flex: 1; outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+
+  .btn {
+    padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer;
+    font-size: 12px; font-weight: 600; transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #4f46e5; }
+  .btn-success { background: var(--success); color: white; }
+  .btn-success:hover { background: #059669; }
+  .btn-danger  { background: var(--danger); color: white; }
+  .btn-danger:hover  { background: #dc2626; }
+  .btn-info    { background: #0891b2; color: white; }
+  .btn-info:hover    { background: #0e7490; }
+  .btn-warning { background: var(--warning); color: #1a1a1a; }
+  .btn-warning:hover { background: #d97706; }
+  .btn-gray    { background: #374151; color: var(--text); }
+  .btn-gray:hover    { background: #4b5563; }
+  .btn-full { width: 100%; margin-bottom: 4px; text-align: left; padding: 7px 12px; }
+
+  .result-box {
+    background: #0f1117; border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; margin: 8px 12px; font-size: 12px; min-height: 48px;
+    line-height: 1.5; color: var(--text);
+  }
+  .result-box.success { border-color: var(--success); color: var(--success); }
+  .result-box.error   { border-color: var(--danger);  color: var(--danger); }
+  .result-box.info    { border-color: var(--accent2); color: var(--accent2); }
+  .result-box.warning { border-color: var(--warning); color: var(--warning); }
+
+  .canvas-area { flex: 1; position: relative; overflow: hidden; }
+  canvas { width: 100%; height: 100%; }
+
+  .canvas-controls {
+    position: absolute; bottom: 12px; right: 12px;
+    display: flex; gap: 6px;
+  }
+  .canvas-controls .btn { padding: 5px 10px; font-size: 11px; background: rgba(26,29,39,0.9); border: 1px solid var(--border); color: var(--text); }
+  .canvas-controls .btn:hover { background: var(--border); }
+
+  .traversal-tag {
+    display: inline-block; background: var(--accent); color: white;
+    padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .traversal-list { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .traversal-item {
+    background: #1e2030; border: 1px solid var(--border); color: var(--text);
+    padding: 2px 8px; border-radius: 4px; font-size: 12px; font-family: monospace;
+  }
+
+  .legend { display: flex; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border-top: 1px solid var(--border); }
+  .legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .empty-msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; color: var(--muted); pointer-events: none; }
+  .empty-msg .icon { font-size: 48px; opacity: 0.3; }
+  .empty-msg p { font-size: 14px; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌳 Árbol Binario de Búsqueda — BST Visualizer</h1>
+  <div class="status-bar">
+    <div class="stat">Peso: <span id="st-peso">0</span></div>
+    <div class="stat">Altura: <span id="st-altura">0</span></div>
+    <div class="stat">Hojas: <span id="st-hojas">0</span></div>
+    <div class="stat">Menor: <span id="st-menor">—</span></div>
+    <div class="stat">Mayor: <span id="st-mayor">—</span></div>
+  </div>
+</header>
+
+<div class="main">
+  <div class="sidebar">
+
+    <div class="section">
+      <div class="section-title">Modificar árbol</div>
+      <div class="input-row">
+        <input type="number" id="inp-valor" placeholder="Valor entero" />
+      </div>
+      <div class="input-row">
+        <button class="btn btn-success btn-full" onclick="op_agregar()">+ Agregar nodo</button>
+      </div>
+      <div class="input-row">
+        <button class="btn btn-danger btn-full" onclick="op_eliminar()">✕ Eliminar nodo</button>
+      </div>
+      <div class="input-row">
+        <button class="btn btn-warning btn-full" onclick="op_borrar()">⊘ Borrar árbol completo</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Consultas del árbol</div>
+      <button class="btn btn-gray btn-full" onclick="op_estaVacio()">¿Está vacío?</button>
+      <button class="btn btn-gray btn-full" onclick="op_peso()">Obtener peso</button>
+      <button class="btn btn-gray btn-full" onclick="op_altura()">Obtener altura</button>
+      <button class="btn btn-gray btn-full" onclick="op_hojas()">Contar hojas</button>
+      <button class="btn btn-gray btn-full" onclick="op_menor()">Nodo menor</button>
+      <button class="btn btn-gray btn-full" onclick="op_mayor()">Nodo mayor</button>
+      <button class="btn btn-gray btn-full" onclick="op_amplitud()">Recorrido amplitud (BFS)</button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Consultas con valor</div>
+      <div class="input-row">
+        <input type="number" id="inp-buscar" placeholder="Valor a buscar" />
+      </div>
+      <button class="btn btn-info btn-full" onclick="op_existe()">¿Existe dato?</button>
+      <button class="btn btn-info btn-full" onclick="op_nivel()">Obtener nivel</button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Recorridos</div>
+      <button class="btn btn-primary btn-full" onclick="op_recorrer('inorden')">↔ Inorden (izq-raiz-der)</button>
+      <button class="btn btn-primary btn-full" onclick="op_recorrer('preorden')">↓ Preorden (raiz-izq-der)</button>
+      <button class="btn btn-primary btn-full" onclick="op_recorrer('postorden')">↑ Postorden (izq-der-raiz)</button>
+    </div>
+
+    <div id="result-box" class="result-box">Listo. Comienza agregando nodos al árbol.</div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>Nodo normal</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Hoja</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Resaltado</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Encontrado</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Eliminado</div>
+    </div>
+  </div>
+
+  <div class="canvas-area">
+    <canvas id="canvas"></canvas>
+    <div class="empty-msg" id="empty-msg">
+      <div class="icon">🌱</div>
+      <p>El árbol está vacío.<br>Agrega nodos para comenzar.</p>
+    </div>
+    <div class="canvas-controls">
+      <button class="btn" onclick="resetZoom()">⟳ Reset vista</button>
+      <button class="btn" onclick="zoomIn()">＋</button>
+      <button class="btn" onclick="zoomOut()">－</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:8080/api';
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let arbolData = null;
+let highlightedNodes = [];
+let highlightColor = '#f59e0b';
+let animNodes = [];
+let scale = 1, offsetX = 0, offsetY = 0;
+let isDragging = false, lastMX = 0, lastMY = 0;
+
+function resizeCanvas() {
+  const parent = canvas.parentElement;
+  canvas.width  = parent.clientWidth;
+  canvas.height = parent.clientHeight;
+  draw();
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+canvas.addEventListener('mousedown', e => { isDragging=true; lastMX=e.clientX; lastMY=e.clientY; canvas.style.cursor='grabbing'; });
+canvas.addEventListener('mouseup',   () => { isDragging=false; canvas.style.cursor='default'; });
+canvas.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  offsetX += e.clientX - lastMX; offsetY += e.clientY - lastMY;
+  lastMX=e.clientX; lastMY=e.clientY; draw();
+});
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.1 : 0.9;
+  scale = Math.max(0.3, Math.min(3, scale * factor));
+  draw();
+}, { passive: false });
+function zoomIn()    { scale = Math.min(3, scale * 1.2); draw(); }
+function zoomOut()   { scale = Math.max(0.3, scale / 1.2); draw(); }
+function resetZoom() { scale=1; offsetX=0; offsetY=0; draw(); }
+
+function calcLayout(node, depth, left, right, positions) {
+  if (!node) return;
+  const x = (left + right) / 2;
+  const y = depth * 80 + 60;
+  positions[node.dato] = { x, y, node };
+  calcLayout(node.izq, depth+1, left, (left+right)/2, positions);
+  calcLayout(node.der, depth+1, (left+right)/2, right, positions);
+}
+
+function getPositions(root) {
+  if (!root) return {};
+  const depth = treeDepth(root);
+  const width = Math.max(600, Math.pow(2, depth) * 60);
+  const positions = {};
+  calcLayout(root, 0, 0, width, positions);
+  return positions;
+}
+
+function treeDepth(node) {
+  if (!node) return 0;
+  return 1 + Math.max(treeDepth(node.izq), treeDepth(node.der));
+}
+
+function isLeaf(node) { return !node.izq && !node.der; }
+
+function draw() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  if (!arbolData) return;
+  document.getElementById('empty-msg').style.display = 'none';
+
+  const positions = getPositions(arbolData);
+  const vals = Object.keys(positions).map(Number);
+  if (vals.length === 0) { document.getElementById('empty-msg').style.display = ''; return; }
+
+  const xs = vals.map(v => positions[v].x);
+  const ys = vals.map(v => positions[v].y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const treeW = maxX - minX;
+  const cx = W/2 - (treeW/2 + minX) * scale + offsetX;
+  const cy = 30 * scale + offsetY;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(scale, scale);
+
+  for (const val of vals) {
+    const pos = positions[val];
+    if (pos.node.izq) drawEdge(pos.x, pos.y, positions[pos.node.izq.dato].x, positions[pos.node.izq.dato].y);
+    if (pos.node.der) drawEdge(pos.x, pos.y, positions[pos.node.der.dato].x, positions[pos.node.der.dato].y);
+  }
+  for (const val of vals) {
+    const pos = positions[val];
+    const isHighlighted = highlightedNodes.includes(val);
+    const isAnim = animNodes.includes(val);
+    let color = isLeaf(pos.node) ? '#10b981' : '#6366f1';
+    if (isHighlighted) color = highlightColor;
+    drawNode(pos.x, pos.y, val, color, isAnim);
+  }
+  ctx.restore();
+}
+
+function drawEdge(x1, y1, x2, y2) {
+  const R = 22;
+  const dx = x2-x1, dy = y2-y1, dist = Math.sqrt(dx*dx+dy*dy);
+  const ux = dx/dist, uy = dy/dist;
+  ctx.beginPath();
+  ctx.moveTo(x1 + ux*R, y1 + uy*R);
+  ctx.lineTo(x2 - ux*R, y2 - uy*R);
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function drawNode(x, y, val, color, anim) {
+  const R = anim ? 26 : 22;
+  ctx.shadowColor = color + '44';
+  ctx.shadowBlur = anim ? 20 : 8;
+  ctx.beginPath();
+  ctx.arc(x, y, R, 0, Math.PI*2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.strokeStyle = color === '#6366f1' ? '#818cf8' : (color === '#10b981' ? '#34d399' : '#fbbf24');
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#fff';
+  ctx.font = `bold ${val > 99 ? 11 : 13}px 'Segoe UI', monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(val, x, y);
+}
+
+async function refreshStats() {
+  try {
+    const [p, a, h] = await Promise.all([
+      fetch(API+'/peso').then(r=>r.json()),
+      fetch(API+'/altura').then(r=>r.json()),
+      fetch(API+'/hojas').then(r=>r.json())
+    ]);
+    document.getElementById('st-peso').textContent   = p.resultado;
+    document.getElementById('st-altura').textContent = a.resultado;
+    document.getElementById('st-hojas').textContent  = h.resultado;
+    if (!arbolData) {
+      document.getElementById('st-menor').textContent = '—';
+      document.getElementById('st-mayor').textContent = '—';
+    } else {
+      const [mn, mx] = await Promise.all([
+        fetch(API+'/menor').then(r=>r.json()),
+        fetch(API+'/mayor').then(r=>r.json())
+      ]);
+      document.getElementById('st-menor').textContent = mn.resultado ?? '—';
+      document.getElementById('st-mayor').textContent = mx.resultado ?? '—';
+    }
+  } catch(e) {}
+}
+
+function showResult(msg, type='info') {
+  const box = document.getElementById('result-box');
+  box.className = 'result-box ' + type;
+  box.innerHTML = msg;
+}
+
+function updateTree(data, highlights=[], hColor='#f59e0b', animList=[]) {
+  arbolData = data.arbol;
+  highlightedNodes = highlights;
+  highlightColor = hColor;
+  animNodes = animList;
+  if (!arbolData) document.getElementById('empty-msg').style.display = '';
+  draw();
+  refreshStats();
+}
+
+async function op_agregar() {
+  const v = document.getElementById('inp-valor').value.trim();
+  if (!v) { showResult('⚠ Ingresa un valor', 'warning'); return; }
+  try {
+    const r = await fetch(`${API}/agregar?valor=${v}`).then(d=>d.json());
+    updateTree(r, [parseInt(v)], '#10b981', [parseInt(v)]);
+    showResult(r.mensaje, r.resultado ? 'success' : 'warning');
+    if (r.resultado) setTimeout(() => { highlightedNodes=[]; animNodes=[]; draw(); }, 1500);
+  } catch(e) { showResult('❌ Error conectando al servidor Java', 'error'); }
+}
+
+async function op_eliminar() {
+  const v = document.getElementById('inp-valor').value.trim();
+  if (!v) { showResult('⚠ Ingresa un valor', 'warning'); return; }
+  try {
+    const r = await fetch(`${API}/eliminar?valor=${v}`).then(d=>d.json());
+    if (r.resultado) {
+      highlightedNodes=[parseInt(v)]; highlightColor='#ef4444'; animNodes=[parseInt(v)]; draw();
+      setTimeout(() => { updateTree(r); }, 600);
+    } else {
+      updateTree(r, [parseInt(v)], '#ef4444');
+      setTimeout(() => { highlightedNodes=[]; animNodes=[]; draw(); }, 1500);
+    }
+    showResult(r.mensaje, r.resultado ? 'success' : 'error');
+  } catch(e) { showResult('❌ Error conectando al servidor Java', 'error'); }
+}
+
+async function op_existe() {
+  const v = document.getElementById('inp-buscar').value.trim();
+  if (!v) { showResult('⚠ Ingresa un valor para buscar', 'warning'); return; }
+  try {
+    const r = await fetch(`${API}/existe?valor=${v}`).then(d=>d.json());
+    updateTree(r, [parseInt(v)], r.resultado ? '#22d3ee' : '#ef4444', [parseInt(v)]);
+    showResult(r.mensaje, r.resultado ? 'info' : 'error');
+    setTimeout(() => { highlightedNodes=[]; animNodes=[]; draw(); }, 1800);
+  } catch(e) { showResult('❌ Error conectando al servidor Java', 'error'); }
+}
+
+async function op_nivel() {
+  const v = document.getElementById('inp-buscar').value.trim();
+  if (!v) { showResult('⚠ Ingresa un valor', 'warning'); return; }
+  try {
+    const r = await fetch(`${API}/nivel?valor=${v}`).then(d=>d.json());
+    updateTree(r, [parseInt(v)], r.resultado >= 0 ? '#22d3ee' : '#ef4444', [parseInt(v)]);
+    showResult(r.mensaje, r.resultado >= 0 ? 'info' : 'error');
+    setTimeout(() => { highlightedNodes=[]; animNodes=[]; draw(); }, 1800);
+  } catch(e) { showResult('❌ Error conectando al servidor Java', 'error'); }
+}
+
+async function op_estaVacio() {
+  try {
+    const r = await fetch(`${API}/estaVacio`).then(d=>d.json());
+    updateTree(r);
+    showResult(r.mensaje, r.resultado ? 'warning' : 'success');
+  } catch(e) { showResult('❌ Error conectando al servidor Java', 'error'); }
+}
+
+async function op_peso() {
+  try {
+    const r = await fetch(`${API}/peso`).then(d=>d.json());
+    updateTree(r);
+    showResult(r.mensaje, 'info');
+  } catch(e) { showResult('❌ Error conectando al servidor Java', 'error'); }
+}
+
+async function op_altura() {
+  try {
+    const r = await fetch(`${API}/altura`).then(d=>d.json());
+    updateTree(r);
+    showResult(r.mensaje, 'info');
+  } catch(e) { showResult('❌ Error conectando al servidor Java', 'error'); }
+}
+
+async function op_hojas() {
+  try {
+    const r = await fetch(`${API}/hojas`).then(d=>d.json());
+    const leaves = [];
+    function findLeaves(node) {
+      if (!node) return;
+      if (!node.izq && !node.der) leaves.push(node.dato);
+      findLeaves(node.izq); findLeaves(node.der);
+    }
+    if (r.arbol) findLeaves(r.arbol);
+    updateTree(r, leaves, '#10b981', leaves);
+    showResult(r.mensaje, 'success');
+    setTimeout(() => { highlightedNodes=[]; animNodes=[]; draw(); }, 2000);
+  } catch(e) { showResult('❌ Error conectando al servidor Java', 'error'); }
+}
+
+async function op_menor() {
+  try {
+    const r = await fetch(`${API}/menor`).then(d=>d.json());
+    const hl = r.resultado !== null ? [r.resultado] : [];
+    updateTree(r, hl, '#22d3ee', hl);
+    showResult(r.mensaje, r.resultado !== null ? 'info' : 'warning');
+    setTimeout(() => { highlightedNodes=[]; animNodes=[]; draw(); }, 1800);
+  } catch(e) { showResult('❌ Error conectando al servidor Java', 'error'); }
+}
+
+async function op_mayor() {
+  try {
+    const r = await fetch(`${API}/mayor`).then(d=>d.json());
+    const hl = r.resultado !== null ? [r.resultado] : [];
+    updateTree(r, hl, '#f59e0b', hl);
+    showResult(r.mensaje, r.resultado !== null ? 'info' : 'warning');
+    setTimeout(() => { highlightedNodes=[]; animNodes=[]; draw(); }, 1800);
+  } catch(e) { showResult('❌ Error conectando al servidor Java', 'error'); }
+}
+
+async function op_amplitud() {
+  try {
+    const r = await fetch(`${API}/amplitud`).then(d=>d.json());
+    const lista = r.resultado || [];
+    let i = 0;
+    function step() {
+      if (i >= lista.length) { highlightedNodes=[]; animNodes=[]; draw(); return; }
+      highlightedNodes = lista.slice(0, i+1);
+      highlightColor = '#a78bfa';
+      animNodes = [lista[i]];
+      draw(); i++;
+      setTimeout(step, 400);
+    }
+    updateTree(r); step();
+    const html = '<span class="traversal-tag">BFS / Amplitud</span><div class="traversal-list">' +
+      lista.map(v=>`<span class="traversal-item">${v}</span>`).join('') + '</div>';
+    showResult(html, 'info');
+  } catch(e) { showResult('❌ Error conectando al servidor Java', 'error'); }
+}
+
+async function op_recorrer(tipo) {
+  try {
+    const r = await fetch(`${API}/recorrer?tipo=${tipo}`).then(d=>d.json());
+    const lista = r.resultado || [];
+    let i = 0;
+    function step() {
+      if (i >= lista.length) { highlightedNodes=[]; animNodes=[]; draw(); return; }
+      highlightedNodes = lista.slice(0, i+1);
+      highlightColor = '#818cf8';
+      animNodes = [lista[i]];
+      draw(); i++;
+      setTimeout(step, 380);
+    }
+    updateTree(r); step();
+    const colores = { inorden:'#6366f1', preorden:'#22d3ee', postorden:'#f59e0b' };
+    const html = `<span class="traversal-tag" style="background:${colores[tipo]||'#6366f1'}">${tipo.toUpperCase()}</span><div class="traversal-list">` +
+      lista.map(v=>`<span class="traversal-item">${v}</span>`).join('') + '</div>';
+    showResult(html, 'info');
+  } catch(e) { showResult('❌ Error conectando al servidor Java', 'error'); }
+}
+
+async function op_borrar() {
+  if (!confirm('¿Seguro que deseas borrar todo el árbol?')) return;
+  try {
+    const r = await fetch(`${API}/borrar`).then(d=>d.json());
+    updateTree(r);
+    document.getElementById('empty-msg').style.display = '';
+    showResult(r.mensaje, 'warning');
+  } catch(e) { showResult('❌ Error conectando al servidor Java', 'error'); }
+}
+
+document.getElementById('inp-valor').addEventListener('keydown', e => { if (e.key === 'Enter') op_agregar(); });
+document.getElementById('inp-buscar').addEventListener('keydown', e => { if (e.key === 'Enter') op_existe(); });
+
+(async () => {
+  try {
+    const r = await fetch(`${API}/arbol`).then(d=>d.json());
+    arbolData = r.arbol;
+    draw(); refreshStats();
+    if (!arbolData) document.getElementById('empty-msg').style.display = '';
+  } catch(e) {
+    showResult('⚠ Servidor Java no encontrado en puerto 8080.<br>Ejecuta primero: <code>bash run.sh</code>', 'error');
+  }
+})();
+</script>
+</body>
+</html>
