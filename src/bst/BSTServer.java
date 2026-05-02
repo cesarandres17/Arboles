@@ -11,7 +11,7 @@ public class BSTServer {
     static ArbolBinario arbol = new ArbolBinario();
 
     public static void main(String[] args) throws Exception {
-        int port = 8080;
+        int port = 8060;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
         server.createContext("/api/estaVacio", BSTServer::handleEstaVacio);
