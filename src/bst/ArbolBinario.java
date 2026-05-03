@@ -10,12 +10,10 @@ public class ArbolBinario {
         this.raiz = null;
     }
 
-    // ─── estaVacio ────────────────────────────────────────────
     public boolean estaVacio() {
         return raiz == null;
     }
 
-    // ─── agregar ──────────────────────────────────────────────
     public boolean agregar(int dato) {
         if (existe(dato))
             return false;
@@ -33,7 +31,6 @@ public class ArbolBinario {
         return nodo;
     }
 
-    // ─── eliminar ─────────────────────────────────────────────
     public boolean eliminar(int dato) {
         if (!existe(dato))
             return false;
@@ -49,12 +46,10 @@ public class ArbolBinario {
         } else if (dato > nodo.dato) {
             nodo.der = eliminarRec(nodo.der, dato);
         } else {
-            // nodo encontrado
             if (nodo.izq == null)
                 return nodo.der;
             if (nodo.der == null)
                 return nodo.izq;
-            // tiene dos hijos: buscar sucesor inorden (mínimo del subárbol derecho)
             int sucesor = obtenerMenorRec(nodo.der);
             nodo.dato = sucesor;
             nodo.der = eliminarRec(nodo.der, sucesor);
@@ -62,7 +57,6 @@ public class ArbolBinario {
         return nodo;
     }
 
-    // ─── existe ───────────────────────────────────────────────
     public boolean existe(int dato) {
         return existeRec(raiz, dato);
     }
@@ -77,7 +71,6 @@ public class ArbolBinario {
         return existeRec(nodo.der, dato);
     }
 
-    // ─── recorridos ───────────────────────────────────────────
     public void inorden(Nodo nodo, List<Integer> lista) {
         if (nodo == null)
             return;
@@ -102,7 +95,6 @@ public class ArbolBinario {
         lista.add(nodo.dato);
     }
 
-    // ─── obtenerPeso ──────────────────────────────────────────
     public int obtenerPeso() {
         return obtenerPesoRec(raiz);
     }
@@ -113,7 +105,6 @@ public class ArbolBinario {
         return 1 + obtenerPesoRec(nodo.izq) + obtenerPesoRec(nodo.der);
     }
 
-    // ─── obtenerAltura ────────────────────────────────────────
     public int obtenerAltura() {
         return obtenerAlturaRec(raiz);
     }
@@ -126,7 +117,6 @@ public class ArbolBinario {
         return 1 + Math.max(altIzq, altDer);
     }
 
-    // ─── obtenerNivel ─────────────────────────────────────────
     public int obtenerNivel(int dato) {
         return obtenerNivelRec(raiz, dato, 0);
     }
@@ -141,7 +131,6 @@ public class ArbolBinario {
         return obtenerNivelRec(nodo.der, dato, nivel + 1);
     }
 
-    // ─── contarHojas ──────────────────────────────────────────
     public int contarHojas() {
         return contarHojasRec(raiz);
     }
@@ -154,7 +143,6 @@ public class ArbolBinario {
         return contarHojasRec(nodo.izq) + contarHojasRec(nodo.der);
     }
 
-    // ─── obtenerMenor / obtenerMayor ──────────────────────────
     public int obtenerMenor() {
         return obtenerMenorRec(raiz);
     }
@@ -175,7 +163,6 @@ public class ArbolBinario {
         return obtenerMayorRec(nodo.der);
     }
 
-    // ─── imprimirAmplitud (BFS) ───────────────────────────────
     public List<Integer> imprimirAmplitud() {
         List<Integer> lista = new ArrayList<>();
         if (raiz == null)
@@ -193,12 +180,10 @@ public class ArbolBinario {
         return lista;
     }
 
-    // ─── borrarArbol ──────────────────────────────────────────
     public void borrarArbol() {
         raiz = null;
     }
 
-    // ─── toJson: serializa el árbol para el frontend ──────────
     public String toJson() {
         if (raiz == null)
             return "null";

@@ -6,7 +6,7 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class BSTServer {
+public class TreeServer {
 
     static ArbolBinario arbol = new ArbolBinario();
 
@@ -14,25 +14,25 @@ public class BSTServer {
         int port = 8060;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
-        server.createContext("/api/estaVacio", BSTServer::handleEstaVacio);
-        server.createContext("/api/agregar", BSTServer::handleAgregar);
-        server.createContext("/api/eliminar", BSTServer::handleEliminar);
-        server.createContext("/api/existe", BSTServer::handleExiste);
-        server.createContext("/api/recorrer", BSTServer::handleRecorrer);
-        server.createContext("/api/peso", BSTServer::handlePeso);
-        server.createContext("/api/altura", BSTServer::handleAltura);
-        server.createContext("/api/nivel", BSTServer::handleNivel);
-        server.createContext("/api/hojas", BSTServer::handleHojas);
-        server.createContext("/api/menor", BSTServer::handleMenor);
-        server.createContext("/api/mayor", BSTServer::handleMayor);
-        server.createContext("/api/amplitud", BSTServer::handleAmplitud);
-        server.createContext("/api/borrar", BSTServer::handleBorrar);
-        server.createContext("/api/arbol", BSTServer::handleGetArbol);
+        server.createContext("/api/estaVacio", TreeServer::handleEstaVacio);
+        server.createContext("/api/agregar", TreeServer::handleAgregar);
+        server.createContext("/api/eliminar", TreeServer::handleEliminar);
+        server.createContext("/api/existe", TreeServer::handleExiste);
+        server.createContext("/api/recorrer", TreeServer::handleRecorrer);
+        server.createContext("/api/peso", TreeServer::handlePeso);
+        server.createContext("/api/altura", TreeServer::handleAltura);
+        server.createContext("/api/nivel", TreeServer::handleNivel);
+        server.createContext("/api/hojas", TreeServer::handleHojas);
+        server.createContext("/api/menor", TreeServer::handleMenor);
+        server.createContext("/api/mayor", TreeServer::handleMayor);
+        server.createContext("/api/amplitud", TreeServer::handleAmplitud);
+        server.createContext("/api/borrar", TreeServer::handleBorrar);
+        server.createContext("/api/arbol", TreeServer::handleGetArbol);
 
         server.setExecutor(null);
         server.start();
         System.out.println("===========================================");
-        System.out.println(" Servidor BST corriendo en puerto " + port);
+        System.out.println(" Servidor Tree corriendo en puerto " + port);
         System.out.println(" Abre index.html en tu navegador");
         System.out.println("===========================================");
     }
